@@ -1,5 +1,5 @@
 // Use the raw.githubusercontent URL directly
-const DATA_URL = 'https://raw.githubusercontent.com/arosedale/Ocean-P3/main/_data/microplastics.csv';
+const DATA_URL = 'https://raw.githubusercontent.com/arosedale/Ocean-P3/refs/heads/main/_data/microplastics.csv';
 
 fetch(DATA_URL)
   .then(response => {
