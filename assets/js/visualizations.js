@@ -1,3 +1,29 @@
+// Add this at the top
+console.log("Script loaded"); // Verify this appears in console
+
+// Update your data loading
+const dataUrl = '{{ site.baseurl }}/_data/microplastics.csv';
+
+fetch(dataUrl)
+  .then(response => {
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return response.text();
+  })
+  .then(csvData => {
+    console.log("Data loaded successfully");
+    // Rest of your visualization code
+  })
+  .catch(error => {
+    console.error('Data loading failed:', error);
+    document.getElementById('map').innerHTML = `
+      <div class="error">
+        <p>Failed to load data. Technical details:</p>
+        <pre>${error.message}</pre>
+        <p>Try refreshing the page.</p>
+      </div>
+    `;
+  });
+
 document.addEventListener('DOMContentLoaded', function() {
     // Load data
     Promise.all([
