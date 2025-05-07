@@ -1,59 +1,38 @@
-// First verify all required libraries are loaded
-function checkRequirements() {
-  const missing = [];
-  if (!window.d3) missing.push('D3.js');
-  if (!window.L) missing.push('Leaflet');
-  if (!window.Chart) missing.push('Chart.js');
-  
-  if (missing.length > 0) {
-    throw new Error(`Missing required libraries: ${missing.join(', ')}`);
+// This will only run AFTER all libraries are loaded
+function initApp() {
+  // Verify all libraries are available
+  if (!window.d3 || !window.L || !window.Chart) {
+    throw new Error('Required libraries not loaded');
   }
-}
 
-// Modern async/await data loader
-async function loadVisualizations() {
-  try {
-    checkRequirements();
-    
-    const DATA_URL = 'https://raw.githubusercontent.com/arosedale/Ocean-P3/main/_data/microplastics.csv';
-    const response = await fetch(DATA_URL);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} - ${response.statusText}`);
-    }
+  console.log('All libraries loaded:', {
+    d3: d3.version,
+    leaflet: L.version,
+    chartjs: Chart.version
+  });
 
-    const csvText = await response.text();
-    const data = d3.csvParse(csvText);
-    
-    if (!data || data.length === 0) {
-      throw new Error('Loaded data is empty');
-    }
-
-    renderMap(data);
-    renderCharts(data);
-    
-  } catch (error) {
-    showError(error);
-    console.error('Visualization error:', error);
-  }
-}
-
-// Initialize when everything is ready
-document.addEventListener('DOMContentLoaded', loadVisualizations);
-function showError(error) {
-  const container = document.getElementById('map-container') || document.body;
+  // Your data loading and visualization code here
+  const DATA_URL = 'https://raw.githubusercontent.com/arosedale/Ocean-P3/main/_data/microplastics.csv';
   
-  container.innerHTML = `
-    <div class="error-alert">
-      <h3>⚠️ Visualization Failed to Load</h3>
-      <div class="error-details">
-        <p><strong>Reason:</strong> ${error.message}</p>
-        <p><strong>Data URL:</strong> ${DATA_URL}</p>
-      </div>
-      <div class="error-actions">
-        <button onclick="window.location.reload()">Reload Page</button>
-        <a href="https://github.com/arosedale/Ocean-P3/issues" target="_blank">Report Issue</a>
-      </div>
-    </div>
-  `;
+  fetch(DATA_URL)
+    .then(response => response.text())
+    .then(csv => {
+      const data = d3.csvParse(csv);
+      console.log('Data loaded:', data.length, 'records');
+      // Render your visualizations
+    })
+    .catch(err => {
+      console.error('Data load failed:', err);
+      document.getElementById('map-container').innerHTML = `
+        <div class="error">
+          <h3>Data Load Failed</h3>
+          <p>${err.message}</p>
+          <p>Tried URL: ${DATA_URL}</p>
+          <button onclick="window.location.reload()">Retry</button>
+        </div>
+      `;
+    });
 }
+
+// Start the app when everything is ready
+document.addEventListener('DOMContentLoaded', initApp);
