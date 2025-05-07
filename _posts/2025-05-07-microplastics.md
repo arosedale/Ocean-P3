@@ -1,19 +1,18 @@
 ---
 layout: post
-title: "The Invisible Flood: Tracking Microplastics in Our Oceans"
+title: "Ocean Microplastics: A Global Crisis"
 author: autumnr3
 date: 2025-05-07
 ---
 
-## The Hidden Crisis
+## Understanding Microplastic Pollution
 
-Microplastics - plastic particles smaller than 5mm - now pollute every ocean...
+Microplastics are tiny plastic particles, smaller than 5 millimeters, that pollute our oceans and harm marine life. They come from things like broken-down plastic bags, fishing nets, and even microbeads in cosmetics.
 
-## Interactive Map (Primary Visualization)
+## Global Microplastic Distribution
 
-<div id="map" style="height:500px; margin:2rem 0">
-  <!-- Embed from Datawrapper/Plotly or add JS -->
-  <iframe src="https://datawrapper.dwcdn.net/ABC123/" width="100%" height="100%"></iframe>
+<div id="main-visualization" style="height:600px; margin:2rem 0">
+  <!-- Interactive map will render here -->
 </div>
 
 ## Key Findings
@@ -22,6 +21,16 @@ Microplastics - plastic particles smaller than 5mm - now pollute every ocean...
 2. **Trends**: Pollution increased 300% since 1990
 3. **Sources**: 35% from synthetic textiles
 
-## Data Sources
-- [NOAA Marine Debris Program](https://marinedebris.noaa.gov)
-- [Analysis Notebook](/notebooks/analysis.ipynb)
+<div class="visualization-grid">
+  <div id="currents-chart">
+    <!-- Ocean currents visualization -->
+  </div>
+  <div id="sources-chart">
+    <!-- Sources pie chart -->
+  </div>
+</div>
+
+## Data and Methods
+
+- **Primary Dataset**: [NOAA Marine Debris Program](https://marinedebris.noaa.gov)
+- [View Analysis Notebook](/notebooks/microplastics-analysis.ipynb)
