@@ -1,145 +1,67 @@
-// assets/js/visualizations.js
+document.addEventListener('DOMContentLoaded', function() {
+    // Load data
+    Promise.all([
+        fetch('/Ocean-P3/_data/microplastics.csv').then(r => r.text()),
+        fetch('https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js'),
+        fetch('https://cdn.jsdelivr.net/npm/chart.js')
+    ]).then(([csvData]) => {
+        // Process data
+        const data = d3.csvParse(csvData, d => ({
+            date: new Date(d.Date),
+            lat: +d.Latitude,
+            lng: +d.Longitude,
+            count: +d.Total_Pieces_L,
+            density: +d.Normalized
+        }));
 
-// Load required libraries
-const leafletScript = document.createElement('script');
-leafletScript.src = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js';
-document.head.appendChild(leafletScript);
+        // Main map visualization
+        const map = L.map('map').setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-const hexbinScript = document.createElement('script');
-hexbinScript.src = 'https://unpkg.com/leaflet-hexbin@1.0.0/leaflet-hexbin.min.js';
-document.head.appendChild(hexbinScript);
+        // Hexbin layer
+        const hexLayer = L.hexbinLayer({
+            radius: 15,
+            colorRange: ['#f1eef6', '#bdc9e1', '#74a9cf', '#2b8cbe', '#045a8d'],
+            radiusRange: [5, 20]
+        });
 
-// Main visualization function
-function renderMap(data) {
-    // Parse and prepare data
-    const parsedData = data.map(d => ({
-        lat: +d.Latitude,
-        lng: +d.Longitude,
-        density: +d.Normalized,
-        count: +d.Total_Pieces_L,
-        date: d.Date
-    }));
+        // Year filter functionality
+        const yearSlider = document.getElementById('year-range');
+        const yearDisplay = document.getElementById('year-value');
+        
+        yearSlider.addEventListener('input', function() {
+            const year = +this.value;
+            yearDisplay.textContent = `1970-${year}`;
+            updateMap(year);
+        });
 
-    // Create map
-    const map = L.map('main-visualization').setView([20, 0], 2);
+        function updateMap(year) {
+            const filtered = data.filter(d => d.date.getFullYear() <= year);
+            hexLayer.data(filtered).addTo(map);
+        }
 
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
-
-    // Create hexbin layer
-    const hexLayer = L.hexbinLayer({
-        radius: 12,
-        opacity: 0.7,
-        duration: 200,
-        colorRange: ['#fef0d9', '#fdcc8a', '#fc8d59', '#e34a33', '#b30000'],
-        radiusRange: [5, 20]
-    });
-
-    hexLayer.data(parsedData)
-        .colorValue(d => d.density)
-        .radiusValue(d => d.count)
-        .tooltipContent((d, hex) => {
-            return `<b>${hex.length} samples</b><br>
-                    Avg density: ${d3.mean(hex, h => h.density).toFixed(4)}<br>
-                    Avg count: ${d3.mean(hex, h => h.count).toFixed(1)}`;
-        })
-        .addTo(map);
-
-    // Add year filter
-    const years = [...new Set(parsedData.map(d => new Date(d.date).getFullYear()))].sort();
-    const yearFilter = L.control({position: 'topright'});
-    
-    yearFilter.onAdd = function() {
-        const div = L.DomUtil.create('div', 'year-filter');
-        div.innerHTML = `
-            <h4>Year Range</h4>
-            <input type="range" id="year-slider" min="${years[0]}" max="${years[years.length-1]}" 
-                   value="${years[years.length-1]}" step="1">
-            <output id="year-value">${years[years.length-1]}</output>
-        `;
-        return div;
-    };
-    yearFilter.addTo(map);
-
-    // Add filter functionality
-    document.getElementById('year-slider').addEventListener('input', function() {
-        const year = +this.value;
-        document.getElementById('year-value').textContent = year;
-        const filtered = parsedData.filter(d => new Date(d.date).getFullYear() <= year);
-        hexLayer.data(filtered);
-    });
-}
-
-
-// Ocean Currents Visualization
-function renderCurrentsChart() {
-    const ctx = document.getElementById('currents-chart');
-    const img = document.createElement('img');
-    img.src = 'https://oceanservice.noaa.gov/facts/currents.jpg';
-    img.alt = 'Ocean currents';
-    img.style.width = '100%';
-    ctx.appendChild(img);
-}
-
-// Sources Pie Chart (Chart.js)
-function renderSourcesChart() {
-    const ctx = document.getElementById('sources-chart').getContext('2d');
-    new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: ['Packaging', 'Fishing Gear', 'Textiles', 'Cosmetics', 'Tires'],
-            datasets: [{
-                data: [40, 20, 15, 10, 15],
-                backgroundColor: [
-                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.label}: ${context.raw}%`;
-                        }
-                    }
-                },
-                legend: {
-                    position: 'right'
+        // Sources chart
+        new Chart(document.getElementById('sources-chart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Packaging', 'Fishing Gear', 'Textiles', 'Cosmetics', 'Other'],
+                datasets: [{
+                    data: [36, 18, 16, 5, 25],
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right' },
+                    tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}%` } }
                 }
             }
-        }
+        });
+
+        // Initial render
+        updateMap(2023);
     });
-}
-
-// Temporal Trends Line Chart
-function renderTrendsChart(data) {
-    const trendsCtx = document.createElement('div');
-    trendsCtx.id = 'trends-chart';
-    document.querySelector('.visualization-grid').appendChild(trendsCtx);
-
-    // Process data for trends
-    const yearlyData = d3.rollup(data, 
-        v => ({
-            avgDensity: d3.mean(v, d => d.Normalized),
-            avgCount: d3.mean(v, d => d.Total_Pieces_L)
-        }),
-        d => new Date(d.Date).getFullYear()
-    );
-
-    const trendData = Array.from(yearlyData, ([year, values]) => ({
-        year,
-        ...values
-    })).sort((a, b) => a.year - b.year);
-
-    // Create SVG
-    const svg = d3.select('#trends-chart')
-        .append('svg')
-        .attr('width', '100%')
-        .attr('height', 400);
-
-    // Add D3 chart code here...
-}
+});
