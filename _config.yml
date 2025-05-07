@@ -5,3 +5,4 @@ url: "https://yourusername.github.io/Ocean-P3"
 theme: minima
 plugins:
   - jekyll-feed
+  - jekyll-data
