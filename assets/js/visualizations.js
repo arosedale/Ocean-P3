@@ -1,54 +1,59 @@
-// Wait for all libraries to load
-window.addEventListener('DOMContentLoaded', function() {
-  // Verify libraries
-  if (!window.d3 || !window.L || !window.Chart) {
-    showError("Required libraries not loaded");
-    return;
-  }
-
-  // Load data
-  const DATA_URL = 'https://raw.githubusercontent.com/arosedale/Ocean-P3/main/_data/microplastics.csv';
+// First verify all required libraries are loaded
+function checkRequirements() {
+  const missing = [];
+  if (!window.d3) missing.push('D3.js');
+  if (!window.L) missing.push('Leaflet');
+  if (!window.Chart) missing.push('Chart.js');
   
-  fetch(DATA_URL)
-    .then(response => {
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-      return response.text();
-    })
-    .then(csvText => {
-      try {
-        const data = d3.csvParse(csvText);
-        if (!data.length) throw new Error("No data found in CSV");
-        renderMap(data);
-        renderCharts(data);
-      } catch (parseError) {
-        showError(`Data parsing failed: ${parseError.message}`);
-      }
-    })
-    .catch(error => {
-      showError(`Data loading failed: ${error.message}\nTried URL: ${DATA_URL}`);
-    });
+  if (missing.length > 0) {
+    throw new Error(`Missing required libraries: ${missing.join(', ')}`);
+  }
+}
 
-  function renderMap(data) {
-    const map = L.map('map').setView([20, 0], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+// Modern async/await data loader
+async function loadVisualizations() {
+  try {
+    checkRequirements();
     
-    // Add your visualization code here
-    console.log("Map rendered with", data.length, "data points");
-  }
+    const DATA_URL = 'https://raw.githubusercontent.com/arosedale/Ocean-P3/main/_data/microplastics.csv';
+    const response = await fetch(DATA_URL);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+    }
 
-  function renderCharts(data) {
-    // Your chart rendering code
-  }
+    const csvText = await response.text();
+    const data = d3.csvParse(csvText);
+    
+    if (!data || data.length === 0) {
+      throw new Error('Loaded data is empty');
+    }
 
-  function showError(message) {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error';
-    errorDiv.innerHTML = `
-      <h3>⚠️ Error</h3>
-      <p>${message}</p>
-      <button onclick="window.location.reload()">Reload Page</button>
-    `;
-    document.getElementById('map-container').appendChild(errorDiv);
-    console.error(message);
+    renderMap(data);
+    renderCharts(data);
+    
+  } catch (error) {
+    showError(error);
+    console.error('Visualization error:', error);
   }
-});
+}
+
+// Initialize when everything is ready
+document.addEventListener('DOMContentLoaded', loadVisualizations);
+function showError(error) {
+  const container = document.getElementById('map-container') || document.body;
+  
+  container.innerHTML = `
+    <div class="error-alert">
+      <h3>⚠️ Visualization Failed to Load</h3>
+      <div class="error-details">
+        <p><strong>Reason:</strong> ${error.message}</p>
+        <p><strong>Data URL:</strong> ${DATA_URL}</p>
+      </div>
+      <div class="error-actions">
+        <button onclick="window.location.reload()">Reload Page</button>
+        <a href="https://github.com/arosedale/Ocean-P3/issues" target="_blank">Report Issue</a>
+      </div>
+    </div>
+  `;
+}
