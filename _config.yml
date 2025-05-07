@@ -1,8 +1,11 @@
 title: "Ocean Microplastics Investigation"
 description: "A data journalism project tracking plastic pollution"
-baseurl: ""
-url: "https://yourusername.github.io/Ocean-P3"
+baseurl: "/Ocean-P3"
+url: "https://yourusername.github.io"
 theme: minima
 plugins:
   - jekyll-feed
   - jekyll-data
+collections:
+  data:
+    output: true
