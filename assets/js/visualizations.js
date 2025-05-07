@@ -71,3 +71,75 @@ function renderMap(data) {
         hexLayer.data(filtered);
     });
 }
+
+
+// Ocean Currents Visualization
+function renderCurrentsChart() {
+    const ctx = document.getElementById('currents-chart');
+    const img = document.createElement('img');
+    img.src = 'https://oceanservice.noaa.gov/facts/currents.jpg';
+    img.alt = 'Ocean currents';
+    img.style.width = '100%';
+    ctx.appendChild(img);
+}
+
+// Sources Pie Chart (Chart.js)
+function renderSourcesChart() {
+    const ctx = document.getElementById('sources-chart').getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Packaging', 'Fishing Gear', 'Textiles', 'Cosmetics', 'Tires'],
+            datasets: [{
+                data: [40, 20, 15, 10, 15],
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.raw}%`;
+                        }
+                    }
+                },
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+}
+
+// Temporal Trends Line Chart
+function renderTrendsChart(data) {
+    const trendsCtx = document.createElement('div');
+    trendsCtx.id = 'trends-chart';
+    document.querySelector('.visualization-grid').appendChild(trendsCtx);
+
+    // Process data for trends
+    const yearlyData = d3.rollup(data, 
+        v => ({
+            avgDensity: d3.mean(v, d => d.Normalized),
+            avgCount: d3.mean(v, d => d.Total_Pieces_L)
+        }),
+        d => new Date(d.Date).getFullYear()
+    );
+
+    const trendData = Array.from(yearlyData, ([year, values]) => ({
+        year,
+        ...values
+    })).sort((a, b) => a.year - b.year);
+
+    // Create SVG
+    const svg = d3.select('#trends-chart')
+        .append('svg')
+        .attr('width', '100%')
+        .attr('height', 400);
+
+    // Add D3 chart code here...
+}
