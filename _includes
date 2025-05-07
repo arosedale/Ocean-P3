@@ -1,22 +1,20 @@
-<!-- Load libraries with error handling -->
-<script>
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = src;
-    script.onload = resolve;
-    script.onerror = () => reject(new Error(`Failed to load ${src}`));
-    document.head.appendChild(script);
-  });
-}
+<!-- Load D3.js and other dependencies -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-Promise.all([
-  loadScript('https://unpkg.com/leaflet@1.7.1/dist/leaflet.js'),
-  loadScript('https://cdn.jsdelivr.net/npm/chart.js'),
-  loadScript('https://d3js.org/d3.v7.min.js')
-]).catch(err => {
-  console.error(err);
-  document.getElementById('map').innerHTML = 
-    '<p class="error">Failed to load required libraries. Please refresh.</p>';
+<!-- Fallback checks -->
+<script>
+window.addEventListener('load', function() {
+  if (!window.d3) {
+    document.getElementById('map').innerHTML = `
+      <div class="error">
+        <h3>Critical Library Missing</h3>
+        <p>D3.js failed to load. This visualization requires D3.js to work.</p>
+        <button onclick="window.location.reload()">Try Again</button>
+        <p>If this persists, please check your internet connection.</p>
+      </div>
+    `;
+  }
 });
 </script>
