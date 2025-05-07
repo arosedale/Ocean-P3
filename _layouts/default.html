@@ -4,18 +4,15 @@
   <meta charset="utf-8">
   <title>{{ page.title }}</title>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+  <!-- Load libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-  {% include head.html %}
 </head>
 <body>
-  {% include header.html %}
-  
-  <article class="post">
+  <main class="container">
     {{ content }}
-  </article>
-
+  </main>
+  <!-- Load your JS last -->
   <script src="{{ '/assets/js/visualizations.js' | relative_url }}"></script>
-  {% include footer.html %}
 </body>
 </html>
