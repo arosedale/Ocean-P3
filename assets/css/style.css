@@ -55,3 +55,22 @@ h1, h2, h3 {
         grid-template-columns: 1fr;
     }
 }
+
+/* Add these new styles */
+.map-loading, .error {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  border: 1px dashed #ccc;
+  margin: 1rem;
+}
+
+.error {
+  color: #d32f2f;
+  background: #ffebee;
+}
+
+.error pre {
+  font-size: 0.8em;
+  text-align: left;
+}
